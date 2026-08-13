@@ -1,7 +1,5 @@
 import pytest
-from conftest import (
-    app, current_superuser, current_user
-)
+from conftest import app, current_superuser, current_user
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
