@@ -3,6 +3,8 @@ from typing import Optional
 import httpx
 from fastapi import HTTPException, status
 
+from app.core.constants import TIMEOUT
+
 
 class YandexDiskClient:
     """Универсальный клиент для API Яндекс Диска"""
@@ -21,16 +23,17 @@ class YandexDiskClient:
         if self._client:
             await self._client.aclose()
 
-    async def create_excel_file(self, title: str, folder: str = "Reports") -> tuple[str, str]:
+    async def create_excel_file(self, title: str,
+                                folder: str = 'Reports') -> tuple[str, str]:
         """
         Создаёт Excel-файл и возвращает ссылку для загрузки и путь к файлу
         """
         await self._create_folder(folder)
 
-        file_path = f"disk:/{folder}/{title}.xlsx"
+        file_path = f'disk:/{folder}/{title}.xlsx'
 
         response = await self._client.get(
-            f"{self.base_url}/resources/upload",
+            f'{self.base_url}/resources/upload',
             headers=self.headers,
             params={"path": file_path, "overwrite": "true"}
         )
@@ -49,7 +52,8 @@ class YandexDiskClient:
         response = await self._client.put(
             upload_url,
             content=content,
-            headers={"Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
+            headers={"Content-Type": "application/vnd.openxmlformats"
+                                     "-officedocument.spreadsheetml.sheet"}
         )
         response.raise_for_status()
 

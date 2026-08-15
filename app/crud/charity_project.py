@@ -26,10 +26,11 @@ class CRUDCharityProject(CRUDBase):
             CharityProject.create_date))
         return list(open_project.scalars().all())
 
-    async def get_projects_by_completion_rate(self, session: AsyncSession) -> list[CharityProject]:
+    async def get_projects_by_completion_rate(self, session: AsyncSession) -> (
+            list)[CharityProject]:
         close_project = await session.execute(select(CharityProject).where(
             CharityProject.fully_invested.is_(True)).order_by(
-            CharityProject.create_date))
+            CharityProject.close_date - CharityProject.create_date))
         return list(close_project.scalars().all())
 
 
