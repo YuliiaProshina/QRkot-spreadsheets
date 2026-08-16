@@ -25,33 +25,46 @@ async def create_simple_report(charity_projects,
         ' ', '_').replace('/', '-')
     upload_url, file_path = await yandex_client.create_excel_file(
         safe_filename, folder)
+    data = [
+        {
+            'Название проекта': project.name,
+            'Время сбора': format_time_delta(
+                project.close_date - project.create_date
+            ),
+            'Описание': project.description,
+        }
+        for project in charity_projects
+    ]
+    df = pd.DataFrame(data)
     output = io.BytesIO()
-    workbook = xlsxwriter.Workbook(output)
-    worksheet = workbook.add_worksheet('Отчет')
-    title_format = workbook.add_format({'bold': True, 'font_size': 14})
-    header_format = workbook.add_format({
-        'bold': True,
-        'bg_color': '#2F75B5',
-        'font_color': 'white',
-        'border': 1,
-        'align': 'center'
-    })
-    cell_format = workbook.add_format({'border': 1, 'align': 'center'})
-    worksheet.merge_range('A1:C1', f'Отчет от {now_date_time}', title_format)
-    headers = ['Название проекта', 'Время сбора', 'Описание']
-    for col, header in enumerate(headers):
-        worksheet.write(1, col, header, header_format)
-    for row, project in enumerate(charity_projects, start=2):
-        worksheet.write(row, 0, project.name, cell_format)
-        worksheet.write(row, 1, format_time_delta(
-            project.close_date - project.create_date), cell_format)
-        worksheet.write(row, 2, project.description, cell_format)
-    total_row = len(charity_projects) + 2
-    worksheet.write(total_row, 0, f'Всего проектов: {len(charity_projects)}',
-                    title_format)
-    worksheet.set_column('A:A', 30)
-    worksheet.set_column('B:B', 20)
-    worksheet.set_column('C:C', 50)
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(
+            writer,
+            sheet_name='Отчет',
+            startrow=1,
+            index=False,
+        )
+        workbook = writer.book
+        worksheet = writer.sheets['Отчет']
+        title_format = workbook.add_format({
+            'bold': True,
+            'font_size': 14,
+            'align': 'center',
+        })
+        worksheet.merge_range(
+            'A1:C1',
+            f'Отчет от {now_date_time}',
+            title_format,
+        )
+        total_row = len(df) + 2
+        worksheet.write(
+            total_row,
+            0,
+            f'Всего проектов: {len(df)}',
+        )
+        worksheet.set_column('A:A', 30)
+        worksheet.set_column('B:B', 20)
+        worksheet.set_column('C:C', 50)
     workbook.close()
     output.seek(0)
     await yandex_client.upload_file(upload_url, output.getvalue())

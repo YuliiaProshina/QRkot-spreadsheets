@@ -94,7 +94,7 @@ class YandexDiskClient:
                 params={"path": f"disk:/{folder}"}
             )
         except httpx.HTTPStatusError as e:
-            if e.response.status_code != 409:
+            if e.response.status_code != status.HTTP_409_CONFLICT:
                 raise
 
 

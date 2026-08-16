@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_async_session
@@ -36,7 +36,7 @@ async def get_report(
         ))
     if not charity_projects:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail='Нет данных для формирования отчёта'
         )
     try:
@@ -45,6 +45,6 @@ async def get_report(
         return public_url
     except Exception as e:
         raise HTTPException(
-            status_code=500,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f'Ошибка при создании отчёта: {str(e)}'
         )
