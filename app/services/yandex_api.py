@@ -1,7 +1,7 @@
 import io
 from datetime import datetime, timedelta
 
-import xlsxwriter
+import pandas as pd
 
 from app.core.config import settings
 from app.core.yandex_client import YandexDiskClient
